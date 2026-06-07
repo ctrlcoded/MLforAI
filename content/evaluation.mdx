@@ -1,0 +1,108 @@
+---
+title: "Evaluation Metrics"
+description: "Why optimizing for Accuracy is the easiest way to get fired. The true mathematical measures of model performance."
+readingTime: "18 min"
+difficulty: "Beginner"
+---
+
+Training a Machine Learning model is easy. Proving that it actually works in the real world is where most junior engineers fail. If you optimize for the wrong mathematical metric, you will deploy a model that looks like a genius on your Jupyter Notebook but behaves like a liability in production.
+
+---
+
+## 1. Mental Model: The Broken Doctor
+
+Imagine you are building an AI doctor to detect an extremely rare genetic disease. Only 1 in 10,000 people have this disease. 
+
+You train a model, and it achieves **99.99% Accuracy**. You celebrate and deploy it to a hospital. 
+
+A month later, the hospital realizes the AI has simply hardcoded the answer "No Disease" for every single patient that walks through the door. Because 9,999 out of 10,000 people are healthy, the model was technically "correct" 99.99% of the time. But it failed to detect a single actual sick person. The model is completely useless.
+
+**The Intuition:** Accuracy is a terrible metric for **imbalanced datasets**. When one class massively outweighs the other, the model will just guess the majority class to get a high score. We need metrics that punish the model for missing the rare events.
+
+---
+
+## 2. The Confusion Matrix
+
+To fix Accuracy, we must break down the model's predictions into four specific buckets. 
+Assume we are detecting Fraud:
+*   **True Positive (TP):** Model predicted Fraud. It actually was Fraud. *(A win)*
+*   **True Negative (TN):** Model predicted Normal. It actually was Normal. *(A win)*
+*   **False Positive (FP - Type I Error):** Model predicted Fraud. It was actually Normal. *(A blocked credit card for no reason)*
+*   **False Negative (FN - Type II Error):** Model predicted Normal. It was actually Fraud. *(Money is stolen)*
+
+<Callout type="warning" title="Interview Defense: Type I vs Type II">
+  You must instantly know the difference in an interview. 
+  **Type I (FP)** is a false alarm. 
+  **Type II (FN)** is a missed danger.
+</Callout>
+
+---
+
+## 3. Precision vs. Recall
+
+These are the two most important metrics in classical ML. They are constantly at war with each other.
+
+### Precision
+*Out of every time the model screamed "FRAUD!", how often was it actually right?*
+`Precision = TP / (TP + FP)`
+
+### Recall (Sensitivity)
+*Out of all the actual, hidden fraud in the universe, what percentage did the model successfully find?*
+`Recall = TP / (TP + FN)`
+
+### The Tradeoff (Why Not Both?)
+If you want 100% Recall (find all the fraud), you just predict "Fraud" for every single transaction. But your Precision drops to 0%, because you flagged millions of innocent people (False Positives). 
+If you want 100% Precision, you only predict "Fraud" when you are 99.999% mathematically certain. But your Recall drops to 0%, because you missed thousands of subtle fraudulent transactions (False Negatives).
+
+### The F1-Score
+The F1-Score is the Harmonic Mean of Precision and Recall. It is a single number that balances both metrics. If your dataset is highly imbalanced, you should optimize for the F1-Score, not Accuracy.
+
+---
+
+## 4. AUC-ROC vs. PR-AUC
+
+In an interview, you will be asked how to evaluate a model *across all possible probability thresholds* (from 0.0 to 1.0) rather than just the default 0.5 threshold. 
+
+1.  **AUC-ROC (Area Under the Receiver Operating Characteristic Curve):** Measures how well the model separates the two classes. 
+2.  **PR-AUC (Precision-Recall Area Under Curve):** Measures performance focusing purely on the minority class.
+
+**The Ultimate Interview Trap:** *"Your dataset has 99% legitimate transactions and 1% fraudulent transactions. Should you evaluate your model using AUC-ROC or PR-AUC?"*
+
+You must use **PR-AUC**. 
+AUC-ROC calculates the False Positive Rate (`FP / (FP + TN)`). Because there are millions of True Negatives (legitimate transactions), the denominator is massive, making the error rate look incredibly small. AUC-ROC will give your terrible model a 0.95 score. PR-AUC completely ignores True Negatives, forcing the evaluation strictly on how well the model handled the rare 1% fraud cases.
+
+---
+
+## 5. How This Appears in Modern AI Systems
+
+Evaluation is the hardest unsolved problem in Generative AI today.
+*   **RAG (Retrieval-Augmented Generation):** When your RAG system searches a Vector Database for documents, you don't evaluate the LLM first. You evaluate the search engine using **Recall@K** (Out of the top K results returned, did we successfully retrieve the one document containing the answer?).
+*   **Hallucination Detection:** When an LLM makes up a fake fact, that is technically a **False Positive**. The LLM confidently predicted a token that was not grounded in reality.
+*   **LLM Leaderboards:** When evaluating foundational models (like GPT-4 vs Claude), researchers use specific benchmarks like MMLU (Massive Multitask Language Understanding) which are heavily rooted in classical statistical accuracy across thousands of diverse domains.
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. Why is Accuracy a misleading metric for imbalanced datasets?
+2. What is a True Positive versus a False Positive?
+3. Define Precision and Recall in your own words.
+4. If a model predicts "Spam" for every single email, what is its Recall?
+5. What does the F1-Score represent?
+
+### Intermediate
+6. What is the difference between a Type I and Type II error? Give a real-world example of each.
+7. *Why Not:* Why wouldn't you just optimize for 100% Precision in a medical cancer detection model?
+8. Explain the mathematical tradeoff between Precision and Recall when you adjust the probability threshold.
+9. *Cross-Link:* If your feature engineering pipeline accidentally introduces Feature Leakage, what will happen to your AUC-ROC score on the validation set?
+10. In a highly imbalanced dataset (99.9% negative class), why does AUC-ROC give an artificially inflated score?
+
+### Advanced
+11. Mathematically, why does the F1-Score use the Harmonic Mean instead of a simple Arithmetic Mean?
+12. If you are predicting which ad a user will click (0.01% click-through rate), do you optimize for Log-Loss or F1-Score? Why?
+13. Explain the difference between Micro-F1 and Macro-F1 in multi-class classification problems.
+
+### Project Defense
+14. *Scenario:* In your portfolio project, you optimized for Precision over Recall. A stakeholder asks why you chose that. Defend your decision using the business context of your specific project.
+15. *Scenario:* You deploy a model with an F1-Score of 0.92. Two weeks later, the production F1-Score drops to 0.60. Walk me through exactly what statistical metrics you would check first to debug the failure.

@@ -1,0 +1,123 @@
+---
+title: "Neural Networks"
+description: "The mathematical architecture that revolutionized AI by automatically learning its own features."
+readingTime: "20 min"
+difficulty: "Intermediate"
+---
+
+Classical Machine Learning algorithms (like Random Forest) require you to manually engineer features. A **Neural Network** is fundamentally different: it is an algorithm specifically designed to figure out the best features automatically by stacking simple mathematical functions on top of each other.
+
+---
+
+## 1. Mental Model: The Assembly Line
+
+Imagine a car manufacturing assembly line. 
+*   The raw metal and glass enter at the start (The Input Layer).
+*   The first station builds a door. The second station takes that door and attaches it to a frame. The third station paints it. (The Hidden Layers).
+*   At the very end, a finished car rolls off the line (The Output Layer).
+
+A Neural Network works identically. It doesn't look at raw pixels and instantly say "Cat". 
+*   **Layer 1** learns to detect basic edges (straight lines, curves).
+*   **Layer 2** combines those edges to detect shapes (circles, triangles).
+*   **Layer 3** combines those shapes to detect concepts (a floppy ear, a snout).
+*   **The Output Layer** combines those concepts to confidently predict "Cat".
+
+**The Intuition:** A Neural Network is simply a massive assembly line of feature extractors, where each layer builds slightly more complex features using the simple features provided by the layer before it.
+
+### Why This Changed AI Forever
+In Classical ML (like Random Forest), a Data Scientist must manually engineer features. To detect a cat, a human has to write math to find an "ear feature" or a "tail feature". 
+With Neural Networks, you feed it raw pixels, and it learns the features automatically. This is one of the biggest mathematical breakthroughs in human history.
+
+### Representation Learning
+This assembly line process is formally called **Representation Learning**:
+*   **Input:** Raw Pixels
+*   **Layer 1:** Edges and Gradients
+*   **Layer 2:** Basic Shapes (Circles, Triangles)
+*   **Layer 3:** Complex Textures (Fur patterns)
+*   **Layer 4:** High-level Concepts (A Snout, a Floppy Ear)
+
+These internal mathematical representations are extracted from the network. **These internal representations later become Embeddings.**
+
+---
+
+## 2. Anatomy of a Neuron
+
+A single "Neuron" in a Neural Network is literally just the equation for a straight line: `Y = WX + B`.
+1.  It takes in inputs (`X`).
+2.  It multiplies them by Weights (`W`).
+3.  It adds a Bias (`B`).
+4.  It passes the result through an **Activation Function**.
+
+### Why Do Activation Functions Exist?
+If you stack 100 straight lines on top of each other, the mathematical result is still just one straight line. If you try to classify a complex, circular dataset using 100 straight lines, you will fail. 
+
+An **Activation Function** (like ReLU or Sigmoid) bends the straight line. By adding non-linearity, the network is mathematically proven (The Universal Approximation Theorem) to be able to wrap around and learn *any* pattern in the universe, no matter how complex.
+
+### Why Bigger Isn't Always Better
+Freshers often believe that if 10 layers are good, 100 layers must be genius. This is a massive engineering trap.
+*   More Layers = Exponentially more training data required.
+*   More Layers = Exponentially more GPU compute needed.
+*   More Layers = Extreme risk of **Overfitting** (the network just memorizes the training data instead of learning general patterns).
+If a simple 3-layer network solves your business problem, deploying a 50-layer network is an engineering failure.
+
+---
+
+## 3. How it Learns: Forward & Backward Passes
+
+### The Forward Pass (Guessing)
+Data enters the input layer, flows through the hidden layers (being multiplied by weights), and reaches the output layer. The network makes a guess: "This is 80% likely to be a Dog."
+
+### The Backward Pass (Backpropagation)
+You tell the network the true label was actually "Cat". The network calculates its Error (Loss). 
+**Backpropagation** is the calculus algorithm that sends this error backward through the network. It calculates exactly how much every single Weight contributed to the terrible guess, and updates them slightly so the next guess is better. 
+*   *Interview Defense:* Backpropagation uses the **Chain Rule** from calculus to link the error at the very end of the network back to the weights at the very beginning.
+
+### The Vanishing Gradient Problem
+Imagine playing the "Telephone Game" with 100 people. By the time the message reaches the 100th person, the original sentence is completely lost. 
+If your Neural Network has 100 layers, the error signal calculated at the end gets exponentially smaller as it is passed backward through the layers. By the time it reaches Layer 1, the gradient is essentially `0.00`. Layer 1 completely stops learning. This is the **Vanishing Gradient** problem, and it prevented Deep Learning from succeeding for decades until the invention of the ReLU activation function and Residual Connections (ResNets).
+
+---
+
+## 4. How This Appears in Modern AI Systems
+
+*   **Transformers (ChatGPT):** Even massive LLMs are built on the foundational principles of Neural Networks. Inside a Transformer block, after the Attention mechanism finishes, the data is passed through a standard Feed-Forward Neural Network (identical to the one described above) to finalize its internal representations.
+*   **Embeddings:** When we say a word is mapped to a 1,536-dimensional vector, those 1,536 numbers are literally just the outputs from the final Hidden Layer of a Neural Network.
+
+---
+
+## 5. What Interviewers Actually Want
+
+When discussing Neural Networks, **interviewers do NOT expect:**
+*   You to derive the Backpropagation calculus equations by hand on a whiteboard.
+
+**Interviewers DO expect:**
+*   You to easily explain *why* neural networks need non-linear activation functions (ReLU).
+*   You to intuitively explain what Backpropagation is (sending error backwards using the chain rule).
+*   You to know what the Vanishing Gradient problem is, and name at least one way to fix it (ReLU, ResNets).
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. Explain the "Assembly Line" mental model of a Neural Network.
+2. What are the 4 mathematical steps that happen inside a single neuron?
+3. Why are Activation Functions absolutely critical?
+4. What is the difference between a Forward Pass and a Backward Pass?
+5. Which optimizer is most commonly used to update the weights during Backpropagation?
+
+### Intermediate
+6. *Why Not:* Why wouldn't you use a Sigmoid activation function in the deep hidden layers of a 50-layer network?
+7. Explain the Vanishing Gradient problem. How does the ReLU activation function help solve it?
+8. *Cross-Link:* If you accidentally initialize all your network weights to zero instead of random numbers, what will happen during Backpropagation?
+9. Explain what an Epoch and a Batch Size are in the context of network training.
+10. How does Dropout prevent overfitting in Neural Networks?
+
+### Advanced
+11. Describe the Exploding Gradient problem. How does Gradient Clipping mitigate it?
+12. If your Neural Network's training loss is decreasing but validation loss is increasing, what is happening, and what are two architectural ways to fix it?
+13. Explain the Universal Approximation Theorem.
+
+### Project Defense
+14. *Scenario:* You built a custom Neural Network to classify tabular data, but it was defeated by XGBoost. Defend why this happened using the concepts of feature interactions and dataset size.
+15. *Scenario:* In your portfolio project, you chose to use a specific Learning Rate Scheduler for your Neural Network. Why did you choose that one, and how did it affect your Loss Landscape navigation?

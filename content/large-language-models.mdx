@@ -1,0 +1,106 @@
+---
+title: "Large Language Models (LLMs)"
+description: "How predicting the next word accidentally created systems that can reason, code, and pass the bar exam."
+readingTime: "22 min"
+difficulty: "Advanced"
+---
+
+When you type a prompt into ChatGPT, you are interacting with a Large Language Model (LLM). Freshers often think ChatGPT is just a massive database of facts. It is not. 
+
+At its absolute core, an LLM only does one mathematical thing: **Predict the next word.**
+
+To understand why predicting the next word leads to artificial intelligence, you must understand the exact four-step pipeline of how LLMs are actually built.
+
+---
+
+## 1. Step 1: Pre-training (The Base Model)
+
+The creation of an LLM begins with immense scale.
+*   **The Data:** You scrape the entire public internet. Reddit, Wikipedia, GitHub, scientific journals, news articles.
+*   **The Task:** You train a massive Transformer network to play a game of "Fill in the blank." You feed it *"The capital of France is"*, and it must use its neural network to predict the word *"Paris"*.
+
+### The Accidental Emergence of Reasoning
+If you train a model to predict the next word on a billion math textbooks, it cannot just memorize them. To accurately predict the next word in a complex algebra equation, the neural network must *actually learn the rules of algebra* internally.
+
+By forcing the model to perfectly predict human text, it is forced to mathematically map human logic, physics, coding syntax, and reasoning into its billions of weights. 
+*   **The Result:** A "Base Model" (like GPT-3). 
+
+### The Problem with Base Models
+Base models are incredibly smart but totally useless as assistants. If you prompt a Base Model with: *"Write a poem about a dog"*, it might predict that the next word is *"Write a poem about a cat"*, because it thinks it is looking at a list of writing prompts on a Reddit thread. It doesn't know it is supposed to *answer* you.
+
+---
+
+## 2. Step 2: Supervised Fine-Tuning (SFT)
+
+To turn a Base Model into an assistant, we must do **Instruction Tuning**.
+
+We hire thousands of humans to write perfect Question & Answer pairs. 
+*   **Prompt:** *"Write a poem about a dog."*
+*   **Label:** *"[A beautifully written poem about a dog]"*
+
+We fine-tune the Base Model on this high-quality dataset. The model learns a new pattern: when it sees a question, it should stop acting like an internet text-generator and start acting like a helpful assistant.
+
+---
+
+## 3. Step 3: RLHF (Alignment)
+
+Instruction Tuning is great, but human annotators make mistakes, and sometimes there are 10 different ways to write a good poem.
+
+**Reinforcement Learning from Human Feedback (RLHF)** is the final polishing step that made ChatGPT go viral.
+1.  The LLM generates 4 different answers to a prompt.
+2.  A human ranks them from Best to Worst.
+3.  We train a separate "Reward Model" to learn what humans like (polite, accurate, concise answers).
+4.  We let the LLM generate text, and the Reward Model gives it a mathematical "thumbs up" or "thumbs down", actively steering the LLM to behave perfectly.
+
+---
+
+## 4. Step 4: Inference (Deploying the Model)
+
+Once training is done, the weights are locked. This is called **Inference**.
+
+### The Context Window
+When you chat with an LLM, it has no permanent memory of you. It only knows what is inside its **Context Window** (the maximum number of words it can process at once). If the context window is 100,000 tokens, and you paste a 150,000-token book, the model will crash or chop off the beginning.
+
+### Temperature
+LLMs output a probability distribution (e.g., `P(Paris) = 90%`, `P(London) = 5%`).
+*   **Temperature = 0.0:** The LLM *always* picks the most likely word. It becomes deterministic, robotic, and perfect for writing code.
+*   **Temperature = 0.8:** The LLM is mathematically encouraged to randomly pick the 2nd or 3rd most likely word. It becomes creative, unpredictable, and perfect for writing stories.
+
+---
+
+## 5. What Interviewers Actually Want
+
+When discussing LLMs, **interviewers do NOT expect:**
+*   You to know how to set up a 10,000 GPU cluster for pre-training.
+
+**Interviewers DO expect:**
+*   You to instantly know the difference between a Base Model and an Instruction-Tuned Model.
+*   You to explain exactly what RLHF is and why it makes models safer.
+*   You to intuitively explain how Temperature affects the output probability distribution.
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. What is the fundamental, core task that an LLM is trained to do?
+2. Why is a "Base Model" useless if you want it to act like a chatbot?
+3. What is Supervised Fine-Tuning (SFT) in the context of LLMs?
+4. How does Temperature affect an LLM's output?
+5. What is a Token, and what is a Context Window?
+
+### Intermediate
+6. Explain the 3 steps of RLHF (Reinforcement Learning from Human Feedback).
+7. *Why Not:* Why don't we just skip pre-training and train the model directly on human Q&A pairs?
+8. What is the difference between Fine-Tuning an LLM and using RAG (Retrieval-Augmented Generation)?
+9. *Cross-Link:* How does the Softmax function from classical probability relate to LLM text generation?
+10. What happens if an LLM generates a "Stop Token"?
+
+### Advanced
+11. Explain what LoRA (Low-Rank Adaptation) is and why it revolutionized open-source LLM fine-tuning.
+12. What is Quantization, and why is it necessary to run large models like Llama-3 locally on a MacBook?
+13. How does the "Reward Hacking" problem occur during the RLHF phase?
+
+### Project Defense
+14. *Scenario:* In your portfolio, you used the OpenAI API with `Temperature = 0.0` for a data extraction task. Defend why you did not use `0.7`.
+15. *Scenario:* You decided to fine-tune an open-source model instead of using few-shot prompting. Walk me through the exact dataset you created for Instruction Tuning and why prompting wasn't enough.

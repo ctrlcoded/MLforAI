@@ -1,0 +1,109 @@
+---
+title: "AI Agents"
+description: "How giving LLMs access to tools and APIs allows them to step out of the chatbox and interact with the physical world."
+readingTime: "20 min"
+difficulty: "Advanced"
+---
+
+Generative AI started as a chatbot. You typed a prompt, the LLM thought about it, and it typed text back. 
+
+But typing text is not taking action. If you ask ChatGPT, *"Cancel my 3 PM meeting and email my boss,"* it can generate the text for the email, but it cannot physically click the "Send" button. It is a brain without hands.
+
+An **AI Agent** is an LLM that has been given hands.
+
+---
+
+## 1. The Anatomy of an Agent
+
+To upgrade an LLM into an Agent, you need three core components.
+
+### 1. The Brain (The LLM)
+The LLM acts as the reasoning engine. It breaks down complex goals into smaller tasks.
+
+### 2. The Hands (Tools / Function Calling)
+You connect the LLM to standard software APIs (Tools). You give the LLM a list of functions it is allowed to use, such as:
+*   `search_web(query)`
+*   `execute_python(code)`
+*   `send_email(to, subject, body)`
+
+### 3. The Loop (ReAct Framework)
+The Agent does not just generate one final answer. It runs in a loop of **Reasoning** and **Acting** (ReAct).
+1.  **Thought:** The agent thinks: *"I need to know the weather in Tokyo before I write this email."*
+2.  **Action:** The agent executes `search_web("Tokyo weather")`.
+3.  **Observation:** The API returns: *"It is raining."*
+4.  **Thought:** The agent thinks: *"Now that I know it's raining, I can write the email."*
+5.  **Action:** The agent executes `send_email(...)`.
+
+---
+
+## 2. Single Agent vs. Multi-Agent Systems
+
+### Single Agent
+One LLM tries to do everything. It is the researcher, the coder, and the reviewer. 
+*   **The Problem:** LLMs suffer from "persona drift" and context overload. If you ask one Agent to research a topic, write python code, debug the code, and format a final PDF, it will get confused and hallucinate wildly halfway through the loop.
+
+### Multi-Agent Systems
+Instead of one massive agent, AI Engineers build teams of micro-agents.
+*   **Agent 1 (The Researcher):** Only has access to the `search_web` tool. Its only job is to find facts and pass them to Agent 2.
+*   **Agent 2 (The Coder):** Only has access to the `execute_python` tool. It takes the facts, writes code, and passes it to Agent 3.
+*   **Agent 3 (The Reviewer):** Has no tools. It just critiques the code and sends it back to Agent 2 if it fails.
+
+By separating concerns, Multi-Agent systems (built with frameworks like LangChain or AutoGen) achieve vastly higher success rates on complex software engineering tasks.
+
+---
+
+## 3. When NOT to Use Agents
+
+This is the most common interview question for senior roles right now. Agents are cool, but they are incredibly dangerous in production.
+
+**Do NOT use an Agent if:**
+1.  **Latency is Critical:** An Agent loop (Thought $\to$ Action $\to$ Observation) might require 5 separate calls to the LLM API. If the user expects an answer in 1 second, an Agent will take 15 seconds.
+2.  **Determinism is Required:** Agents are non-deterministic. If you ask an Agent to route a financial transaction, it might decide to randomly browse the web first. Standard `If/Else` code is infinitely safer for critical logic.
+3.  **The Task is Simple:** If you just want to extract a name from a PDF, do not use an Agent. Use standard LLM extraction.
+
+---
+
+## 4. How This Appears in Modern AI Systems
+
+Agents represent the final frontier of AI Engineering.
+*   **Coding Assistants:** Tools like Devin or GitHub Copilot Workspace are Multi-Agent systems that read your repository, plan architectural changes, and execute terminal commands autonomously.
+*   **Autonomous RAG:** Instead of a static RAG pipeline, an Agent can use a `query_database` tool. If the first search returns bad results, the Agent can physically "think" and rewrite its own search query to try again until it finds the right document.
+
+---
+
+## 5. What Interviewers Actually Want
+
+When discussing AI Agents, **interviewers do NOT expect:**
+*   You to have built a conscious AGI system in your basement.
+
+**Interviewers DO expect:**
+*   You to deeply understand that an Agent is just an LLM wrapped in a `While` loop with access to standard REST APIs.
+*   You to explicitly know when *not* to use an Agent (due to cost, latency, and hallucination loops).
+*   You to explain the difference between a simple RAG pipeline and an Agentic pipeline.
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. What is the fundamental difference between a standard LLM chatbot and an AI Agent?
+2. What is a "Tool" in the context of an Agent?
+3. Explain the ReAct (Reasoning and Acting) loop.
+4. Why is Latency a massive problem for AI Agents?
+5. Give an example of a task where you would definitely NOT use an Agent.
+
+### Intermediate
+6. Explain the concept of Function Calling (Tool Calling) at the API level. How does the LLM know the tool exists?
+7. *Why Not:* Why wouldn't you just build one massive Single Agent with 50 tools instead of a Multi-Agent system?
+8. What happens if an Agent calls an API tool and the API returns a `500 Server Error`? How should the Agent handle it?
+9. *Cross-Link:* How does the Context Window limit affect an Agent that has been running in a loop for 20 steps?
+10. What is "Agentic RAG" and how does it differ from standard RAG?
+
+### Advanced
+11. Explain how you would prevent an Agent from getting stuck in an infinite loop (e.g., executing the same broken code over and over).
+12. How do you evaluate the performance of an Agentic system when the path it takes to get the final answer is non-deterministic?
+13. Describe how a Multi-Agent framework handles memory and state sharing between different agents.
+
+### Project Defense
+14. *Scenario:* In your portfolio project, you gave an Agent access to a SQL database. Defend the security guardrails you implemented to ensure the Agent couldn't execute a `DROP TABLE` command.
+15. *Scenario:* You built a Multi-Agent research system. The system works, but it takes 45 seconds to answer a single question. Walk me through the exact architectural changes you would make to reduce this latency.

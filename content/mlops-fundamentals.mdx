@@ -1,0 +1,103 @@
+---
+title: "MLOps & Production AI"
+description: "Why models degrade the moment they are deployed, and how to maintain them in the real world."
+readingTime: "15 min"
+difficulty: "Advanced"
+---
+
+In a Jupyter Notebook, your data is clean, static, and perfect. You run `.fit()` and get 98% accuracy. You feel like a genius.
+
+Then you deploy the model to the real world. 
+Within a week, accuracy drops to 60%. The model starts making catastrophic errors. Customers complain. 
+
+Welcome to **Machine Learning Operations (MLOps)**.
+
+---
+
+## 1. The Core Problem: The World Changes
+
+Software Engineering assumes code is deterministic. A sorting algorithm written in 2010 will still correctly sort numbers in 2050.
+Machine Learning is statistically tied to the state of the world. And the world constantly changes.
+
+### Concept Drift
+The definition of the "target" changes. 
+*   *Example:* You train a Fraud Detection model in 2019. It learns that spending \$500 on hand sanitizer in one day is highly anomalous (Fraud!). 
+*   *The Drift:* In 2020, COVID-19 hits. Suddenly, spending \$500 on hand sanitizer is totally normal behavior. The definition of "Fraud" fundamentally shifted. Your model is now broken.
+
+### Data Drift
+The distribution of the input data changes, even if the core concept is the same.
+*   *Example:* You train a self-driving car model exclusively in sunny California.
+*   *The Drift:* You deploy the car in snowy Canada. The camera feed is completely white. The data distribution has shifted, and the model crashes the car.
+
+---
+
+## 2. The MLOps Pipeline
+
+To prevent these disasters, AI Engineers build continuous pipelines, not static models.
+
+### 1. Feature Stores
+If you engineered a brilliant feature called `avg_purchase_30_days`, the training team and the production team must calculate it exactly the same way. A **Feature Store** ensures that the logic used to train the model in the notebook is the exact same logic used to serve the model in the live app (preventing Pipeline Desynchronization).
+
+### 2. Model Registries
+You don't just email a `.pkl` file to the backend team. You save the model to a **Model Registry** (like MLflow). It tracks the model version, the hyperparameter used, and exactly which dataset it was trained on. If a model breaks, you can instantly roll back to Version 1.2.
+
+### 3. Continuous Monitoring
+You must actively track the statistical distribution of live data compared to training data. If your live system suddenly receives 40% null values for a feature that was never null during training, the monitoring system fires an alert to Slack before the model makes bad predictions.
+
+---
+
+## 3. Evaluation in Production
+
+You cannot evaluate a deployed model using standard accuracy metrics, because in the real world, *you don't have the labels yet*. (If you knew whether a transaction was fraud or not instantly, you wouldn't need a model).
+
+How do you test a new model safely?
+
+*   **Shadow Deployment:** Deploy the new V2 model alongside the live V1 model. V2 receives live user data and makes predictions, but its predictions are *ignored* and only logged to a database. V1 actually serves the user. After a week, you compare V2's logs against reality to see if it is safe to promote.
+*   **A/B Testing (Canary Deployment):** Route 90% of traffic to V1, and 10% to V2. Monitor business metrics (like conversion rate or click-through rate).
+
+---
+
+## 4. How This Appears in Modern AI Systems
+
+MLOps has evolved drastically for Generative AI (sometimes called **LLMOps**):
+*   **Prompt Tracking:** Instead of tracking hyperparameter values, teams track different versions of Prompts to see which one causes fewer hallucinations.
+*   **Evaluation via LLM:** Because generating text is subjective, teams use a massive model (like GPT-4) as an automated "Judge" to grade the responses of their smaller production models (like Llama-3) in real-time.
+
+---
+
+## 5. What Interviewers Actually Want
+
+When discussing MLOps, **interviewers do NOT expect:**
+*   You to have single-handedly managed a Kubernetes cluster scaling 10,000 Docker containers.
+
+**Interviewers DO expect:**
+*   You to deeply understand that models degrade, and you can explain the difference between Data Drift and Concept Drift.
+*   You to know what Shadow Deployments are.
+*   You to explicitly state that the Jupyter Notebook is only 5% of the actual job.
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. What is the fundamental difference between standard software code and a machine learning model in production?
+2. Explain Data Drift using a real-world example.
+3. Explain Concept Drift using a real-world example.
+4. What is the purpose of a Model Registry?
+5. Why can't you easily calculate "Accuracy" on live production data?
+
+### Intermediate
+6. Walk me through how a Shadow Deployment works.
+7. *Why Not:* Why wouldn't you just retrain your model every single night on the newest data automatically?
+8. Explain Pipeline Desynchronization (Training-Serving Skew). How does a Feature Store help prevent it?
+9. *Cross-Link:* How would you use your knowledge of Evaluation Metrics (like False Positives) to set up an alert in your MLOps monitoring dashboard?
+10. What is "LLM-as-a-Judge" in the context of Generative AI evaluation?
+
+### Advanced
+11. How do you handle delayed labels in production? (e.g., A user might not report a fraudulent charge for 45 days).
+12. Explain the difference between Batch Prediction and Online Inference. What are the latency requirements for each?
+13. If your monitoring system alerts you that Data Drift has occurred, walk me through the exact steps you take to debug and fix the model.
+
+### Project Defense
+14. *Scenario:* You have a Jupyter Notebook in your portfolio that achieves 95% accuracy on Kaggle data. An interviewer asks: *"If I hired you to put this into our live iOS app today, what are the first three engineering steps you would take?"*
+15. *Scenario:* Your RAG pipeline was deployed successfully, but users are complaining the answers are getting worse over time. Walk me through your LLMOps strategy to track and evaluate these subjective complaints.

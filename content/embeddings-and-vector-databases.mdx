@@ -1,0 +1,105 @@
+---
+title: "Embeddings & Vector Databases"
+description: "How computers mathematically understand meaning, and why keyword search is obsolete."
+readingTime: "18 min"
+difficulty: "Intermediate"
+---
+
+If you want to search a database for the word "Apple", standard databases (like SQL or Elasticsearch) are perfect. They look for the exact letters A-P-P-L-E. 
+
+But what if a user searches for *"smartphone with a good camera"*? 
+The word "Apple" is nowhere in that query. A keyword search will return zero results. 
+
+To solve this, AI Engineers don't use keywords. They use **Embeddings**.
+
+---
+
+## 1. What is an Embedding?
+
+An Embedding is a translation. It translates a human concept (a word, a sentence, or an image) into a massive list of numbers (a vector) so that a computer can understand its *meaning*.
+
+**Mental Model: The Map of Meaning**
+Imagine drawing a 2D map on a piece of paper. You have an X-axis for "Royalty" and a Y-axis for "Gender".
+*   You plot the word "King" at `[0.9, 1.0]`.
+*   You plot the word "Queen" at `[0.9, -1.0]`.
+*   You plot the word "Man" at `[0.1, 1.0]`.
+*   You plot the word "Woman" at `[0.1, -1.0]`.
+
+You have just created a 2-dimensional embedding. The computer doesn't know what a King is, but it knows mathematically that the distance between "Man" and "King" is identical to the distance between "Woman" and "Queen". 
+
+**The Intuition:** Embeddings are learned mathematical representations where similar concepts end up physically near each other in space.
+
+---
+
+## 2. The Power of High-Dimensional Space
+
+A 2D map is great for basic concepts. But human language is infinitely complex. A modern embedding model (like OpenAI's `text-embedding-3-small`) doesn't use 2 dimensions. It uses **1,536 dimensions**.
+
+You cannot visualize 1,536 dimensions, but the math works exactly the same.
+Because it has so many dimensions, the embedding captures grammar, tone, sentiment, and deep semantic meaning. 
+*   **The Geography Example:** The mathematical vector for `[Paris] - [France] + [Germany]` will land almost exactly on the vector for `[Berlin]`.
+*   **The AI Engineering Example:** If you embed a candidate's `[Resume]` and embed a company's `[Job Description]`, the mathematical distance between those two vectors will tell you exactly how qualified the candidate is, even if they never use the same keywords.
+
+---
+
+## 3. Vector Databases
+
+If you convert your entire company's Wiki into millions of embeddings, where do you store them? You cannot store them in a standard SQL database because SQL cannot do vector math quickly.
+
+You use a **Vector Database** (like Pinecone, Milvus, or Chroma).
+
+### How Vector Search Works (Cosine Similarity)
+When a user asks a question:
+1.  **Embed the Query:** The user's question (*"How do I reset my password?"*) is sent to the embedding model and converted into a 1,536-dimensional vector.
+2.  **Search the Database:** The Vector Database takes that query vector and compares it against all 1 million vectors in the database.
+3.  **Calculate Distance:** It uses **Cosine Similarity** (the angle between two vectors) to find the vectors that are pointing in the exact same direction.
+4.  **Retrieve:** It returns the original text attached to the closest vectors.
+
+Because the search is based on mathematical meaning, it will successfully return a document titled *"Account Recovery Procedures"*, even though it shares zero keywords with *"How do I reset my password?"*.
+
+---
+
+## 4. How This Appears in Modern AI Systems
+
+Embeddings are the backbone of the AI Engineer's toolkit.
+*   **RAG (Retrieval-Augmented Generation):** Before an LLM answers a question, the Vector Database is queried to find the absolute best contextual documents to give the LLM. 
+*   **Recommendation Systems:** Spotify embeds users and songs into the same vector space. If your User Vector is physically close to a Song Vector, Spotify recommends that song.
+
+---
+
+## 5. What Interviewers Actually Want
+
+When discussing Embeddings, **interviewers do NOT expect:**
+*   You to write the exact cosine similarity formula from scratch.
+
+**Interviewers DO expect:**
+*   You to intuitively explain that Embeddings capture *semantic meaning*, not keywords.
+*   You to know why classical databases (like Postgres) require specialized extensions (like `pgvector`) to do similarity search.
+*   You to explain the difference between Cosine Similarity and Dot Product.
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. In your own words, what is an Embedding?
+2. Why does keyword search fail when a user searches for "affordable automobile" but the document says "cheap car"?
+3. What is a Vector Database, and why do we need one?
+4. Explain the concept of Semantic Distance.
+5. Give three real-world use cases for Embeddings.
+
+### Intermediate
+6. *Why Not:* Why wouldn't you just use an LLM (like GPT-4) to read your entire database instead of using a Vector Database?
+7. Explain Cosine Similarity. Why is the angle between vectors often more important than their absolute distance (Euclidean distance)?
+8. *Cross-Link:* How does a Transformer model actually generate an embedding? (Hint: It is the output of the final hidden layer before the classification head).
+9. If you embed the word "Apple" (the fruit) and "Apple" (the company), do they get the exact same vector? (Hint: Contextual vs Static embeddings).
+10. What is the curse of dimensionality when doing Vector Search?
+
+### Advanced
+11. Explain HNSW (Hierarchical Navigable Small World) graphs. How do Vector Databases use them to search 100 million vectors in milliseconds?
+12. If your embedding model is updated (e.g., from OpenAI V2 to V3), what must you physically do to your Vector Database?
+13. How does Asymmetric Search differ from Symmetric Search when building a RAG system?
+
+### Project Defense
+14. *Scenario:* In your portfolio project, you chose Pinecone over a local ChromaDB instance. Defend this architectural choice regarding scale and latency.
+15. *Scenario:* Your vector search is returning completely irrelevant documents. Walk me through the exact steps you would take to debug whether the Embedding Model is failing or the Vector Database search algorithm is configured incorrectly.

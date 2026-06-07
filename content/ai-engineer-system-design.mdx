@@ -1,0 +1,109 @@
+---
+title: "AI Engineer System Design"
+description: "How to design production AI systems when GPT-4 is too slow, too expensive, or down entirely."
+readingTime: "20 min"
+difficulty: "Advanced"
+---
+
+Traditional Software Engineers design systems to handle millions of requests without crashing. They worry about Load Balancers, Database Sharding, and Microservices.
+
+**AI Engineers design systems to handle the Trilemma: Latency, Cost, and Accuracy.**
+
+An LLM is not a standard API. It is incredibly slow, insanely expensive, and mathematically non-deterministic. If you treat OpenAI's API like a standard REST endpoint, your startup will go bankrupt, and your users will leave due to 10-second wait times.
+
+This is how you actually design AI systems.
+
+---
+
+## 1. The Core Tradeoff: LLM vs. Classical ML
+
+**The Freshman Mistake:** 
+Your company needs to classify incoming customer support emails as either "Refund Request" or "Technical Support". The fresher writes a script that sends every single email to `gpt-4` and asks it to classify the text. 
+*   **The Cost:** If you get 100,000 emails a day, `gpt-4` will cost you \$300/day.
+*   **The Latency:** It will take 2-3 seconds per email.
+
+**The AI Engineer System Design:**
+You do not use an LLM for simple classification. You train a **Logistic Regression** model or a **FastText** model.
+*   **The Cost:** \$0.00. It runs locally.
+*   **The Latency:** 0.005 seconds.
+
+**The Golden Rule:** Never use a Foundation Model for a task that a Classical ML model can do perfectly. Use LLMs for *Reasoning*, use Classical ML for *Routing and Classification*.
+
+---
+
+## 2. Dealing with Latency: Semantic Caching
+
+If 1,000 users ask your chatbot *"How do I reset my password?"*, standard AI systems will send that prompt to the LLM 1,000 times, wasting time and money computing the exact same answer.
+
+You solve this with **Semantic Caching**.
+1.  User asks a question.
+2.  You **Embed** the question into a vector.
+3.  You check your Vector Database Cache: *"Has anyone asked a question with a 98% cosine similarity to this vector recently?"*
+4.  If yes, you instantly return the cached answer. The LLM is completely bypassed. Latency drops from 3 seconds to 50 milliseconds.
+
+---
+
+## 3. Dealing with Outages: Fallbacks & Routing
+
+Foundation Models go down. The OpenAI API will crash on the exact day you launch your product.
+
+A robust AI system never relies on a single provider.
+*   **The Primary:** `gpt-4o` (High intelligence, High cost).
+*   **The Fallback:** `claude-3-haiku` (If OpenAI goes down, the API gateway automatically routes the request to Anthropic).
+*   **The Local Fallback:** `llama-3-8b` (If the entire internet goes down, run a quantized open-source model locally on your own servers to provide degraded, but functioning, service).
+
+### LLM Routing
+You don't need a PhD-level model for every query.
+If a user asks *"Summarize this paragraph"*, you route it to a fast, cheap model (like `gpt-3.5-turbo`).
+If a user asks *"Write a Python script to perform quantum simulation"*, you route it to the expensive, smart model (`gpt-4`). This saves massive amounts of money at scale.
+
+---
+
+## 4. System Design: The RAG Pipeline in Production
+
+In a system design interview, you will be asked to draw a production RAG system. Do not just draw "Vector DB -> LLM". Draw the realities:
+1.  **Ingestion Service:** A cron job that checks Jira/Confluence every hour for new documents, chunks them, and upserts them to Pinecone.
+2.  **Guardrails Service:** Before the user's prompt hits the LLM, a fast classifier checks for Prompt Injection attacks.
+3.  **Vector Search:** Retrieves the top 10 chunks.
+4.  **Re-Ranker:** A Cross-Encoder model re-evaluates the 10 chunks and sorts them perfectly, discarding irrelevant ones.
+5.  **Generation:** The LLM generates the answer.
+6.  **Telemetry:** The user's query, the retrieved chunks, the final answer, and the Latency are logged to a database for future RLHF fine-tuning.
+
+---
+
+## 5. What Interviewers Actually Want
+
+When discussing AI System Design, **interviewers do NOT expect:**
+*   You to know how to design Netflix's global distributed video streaming architecture.
+
+**Interviewers DO expect:**
+*   You to immediately identify API Cost and Latency as the primary bottlenecks of AI apps.
+*   You to know that caching exists, and specifically how *Semantic* caching works using vectors.
+*   You to proactively mention Fallback routing because APIs are unreliable.
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. What are the three core tradeoffs in AI System Design?
+2. Why is sending every user request to GPT-4 a bad idea for a high-traffic app?
+3. Explain the difference between standard caching (Redis) and Semantic Caching.
+4. What is a "Fallback Model" and why is it necessary?
+5. Give an example of a task where you would use a Classical ML model instead of an LLM to save money.
+
+### Intermediate
+6. Walk me through how an LLM Router works based on query complexity.
+7. *Why Not:* Why wouldn't you just run Llama-3 locally for everything to avoid API costs entirely?
+8. Explain what a Cross-Encoder Re-Ranker is and why it sits between the Vector DB and the LLM.
+9. *Cross-Link:* How does the concept of "Data Leakage" from classical ML apply to a RAG system updating its vector database with new company documents?
+10. Describe Prompt Injection. Where in your system architecture should you place the defenses to block it?
+
+### Advanced
+11. If your RAG system has a latency budget of 1.5 seconds, how do you allocate that time between the Embedding model, Vector Search, Re-ranking, and LLM generation?
+12. Explain how you would implement streaming (Server-Sent Events) to improve the perceived latency of an LLM application.
+13. How do you handle asynchronous background processing for AI tasks that take 30+ seconds to complete?
+
+### Project Defense
+14. *Scenario:* In your portfolio project, you relied exclusively on the OpenAI API. An interviewer asks: "What happens if OpenAI's API latency spikes to 10 seconds?" Defend how you would architect a solution.
+15. *Scenario:* You built a chatbot. An interviewer asks: "How much does this cost per 1,000 users, and how would you reduce that cost by 50% without changing the underlying Foundation Model?"

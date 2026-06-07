@@ -1,0 +1,115 @@
+---
+title: "Supervised Learning"
+description: "The classical algorithms that built the AI industry, and why they eventually hit a mathematical ceiling."
+readingTime: "25 min"
+difficulty: "Intermediate"
+---
+
+Supervised Learning is the process of teaching a model by example. You provide the inputs (Features) and the correct answers (Labels). The algorithm's only job is to mathematically reverse-engineer the relationship between them so it can guess the label for new, unseen inputs.
+
+While Deep Learning dominates the headlines, Classical Supervised Learning dominates the enterprise. If you are predicting tabular data (SQL rows, Excel spreadsheets, financial ledgers), these algorithms are faster, cheaper, and often more accurate than a trillion-parameter LLM.
+
+---
+
+## 1. Linear Models (The Straight Line)
+
+Linear models assume that the relationship between the features and the target can be perfectly drawn with a straight line (or a flat mathematical plane in higher dimensions).
+
+### Mental Model: The See-Saw
+Imagine balancing a see-saw. Every time you add a feature (like "Square Footage"), the see-saw tips. The model adjusts a single weight (a multiplier) to perfectly balance the see-saw against the target "House Price". 
+
+### Logistic Regression (Classification)
+Despite the name "Regression", this is a classification algorithm. It takes the straight line and bends it into an S-curve (the Sigmoid function) to output a probability between 0 and 1.
+*   **When to Use:** Baseline models. It should literally be the first algorithm you test on any binary classification problem (e.g., Spam vs Not Spam).
+*   **When Not to Use / Failure Modes:** When features interact with each other non-linearly (e.g., Age and Dosage in medicine). It completely fails on highly complex, correlated data.
+*   **Connection to Modern AI:** The Sigmoid function used in Logistic Regression is the exact foundational activation function that built the first Neural Networks. 
+
+### Why Linear Models Lost to Deep Learning
+*Linear Boundary $\to$ Neural Networks Learn Non-Linear Boundaries*
+Linear models are mathematically rigid. If your data requires a circle to separate the classes, a straight line will fail catastrophically. Deep Learning stacks thousands of linear models together and bends them using non-linear activation functions (ReLU), allowing them to wrap around infinitely complex datasets.
+
+---
+
+## 2. Tree Models (The Rule Makers)
+
+Decision Trees completely abandon the "straight mathematical line". Instead, they furiously partition the data into boxes using a series of `If/Else` splits.
+
+### Mental Model: The Flowchart of 20 Questions
+Imagine playing the game "20 Questions". You ask: "Is it an animal?" "Does it have four legs?" "Does it bark?" 
+A Decision Tree mathematically calculates the single best question to ask at every step that splits the remaining dataset as cleanly as possible (using a metric called Gini Impurity or Entropy).
+
+### When to Use
+*   When explainability is paramount. You can legally print out a Decision Tree and show it to an auditor to explain exactly why a loan was denied.
+*   When your data has extreme non-linear feature interactions.
+
+### When Not to Use / Failure Modes
+*   **Catastrophic Overfitting:** If you don't constrain a single Decision Tree (limit its maximum depth), it will keep asking questions until it has a separate box for every single row in your training set. It memorizes the data.
+
+### Why Decision Trees Lost to Deep Learning
+*Manual Features $\to$ Representation Learning*
+A Decision Tree can only split on the exact features you manually engineered. If you feed it raw pixels of a dog, asking "Is Pixel #452 greater than 120?" is mathematically useless. Deep Learning (CNNs) automatically learns high-level abstract representations (like "floppy ear" or "snout") directly from the raw pixels.
+
+---
+
+## 3. Ensemble Models (The Wisdom of Crowds)
+
+If a single Decision Tree is weak and prone to overfitting, what happens if we build a forest of them?
+
+### Mental Model: The Board of Directors
+Instead of asking one highly opinionated expert (a single Decision Tree) for advice, you ask 1,000 slightly different, mediocre experts, and have them vote on the final answer. 
+
+### Random Forest (Bagging)
+You build 1,000 trees. To ensure they don't all memorize the exact same patterns, you randomly hide some rows of data and some feature columns from each tree. They vote on the final prediction.
+*   **When to Use:** The ultimate "plug and play" algorithm. It requires almost no hyperparameter tuning and is highly resistant to overfitting.
+
+### XGBoost / Gradient Boosting (Boosting)
+Instead of building 1,000 independent trees, you build them sequentially. Tree #1 makes predictions. It gets some wrong. Tree #2 is specifically built to focus *only* on the mistakes Tree #1 made. Tree #3 focuses on Tree #2's mistakes. 
+*   **When to Use:** Tabular data competitions (Kaggle). XGBoost is the reigning champion of classical ML.
+*   **Failure Modes:** Because XGBoost actively hunts down errors, it is highly susceptible to **Label Noise** (it will hyper-focus on fitting mislabeled data, destroying the model).
+
+### Why Ensemble Models Lost to Deep Learning
+*Sequential CPU Computation $\to$ Massive GPU Parallelization*
+While Random Forests can be parallelized, Gradient Boosting is inherently sequential (Tree #2 must wait for Tree #1 to finish). Neural Networks consist of millions of independent matrix multiplications that can be parallelized perfectly across tens of thousands of GPU cores, allowing them to scale infinitely with compute.
+
+---
+
+## 4. Choosing the Right Algorithm
+
+In an interview, you must articulate the exact framework you use to select an algorithm.
+1.  **Baseline First:** Always start with Logistic/Linear Regression. Determine the baseline.
+2.  **Tabular/SQL Data:** Immediately jump to XGBoost or LightGBM. Deep Learning rarely beats XGBoost on standard Excel-style data.
+3.  **Unstructured Data (Text, Audio, Images):** Immediately jump to Deep Learning / Transformers. Classical ML will fail.
+4.  **Explainability Required (Healthcare/Finance):** Revert back to shallow Decision Trees or Logistic Regression to satisfy regulatory auditors.
+
+---
+
+## 5. How This Appears in Modern AI Systems
+
+*   **Ensemble Thinking in GenAI:** The concept of "Wisdom of Crowds" (Random Forest) has been directly ported to LLMs via **Mixture of Experts (MoE)**. GPT-4 is not one massive model; it is an ensemble of 8 smaller expert models, where a routing algorithm decides which expert should answer your specific prompt.
+
+---
+
+## 6. Interview Mastery & Project Defense
+
+### Beginner
+1. What is the fundamental difference between a Linear model and a Tree model?
+2. Why is Logistic Regression used for classification instead of regression?
+3. How does a Decision Tree decide which feature to split on?
+4. Explain the concept of "Ensemble" modeling using an analogy.
+5. What is the difference between Bagging (Random Forest) and Boosting (XGBoost)?
+
+### Intermediate
+6. *Why Not:* Why wouldn't you use a Deep Neural Network to predict house prices based on a 20-column SQL table?
+7. How does a Random Forest prevent overfitting compared to a single Decision Tree?
+8. Explain why XGBoost is highly sensitive to noisy data or outliers compared to Random Forest.
+9. If your Logistic Regression model is suffering from high bias, what steps would you take to fix it?
+10. *Cross-Link:* How do the Evaluation Metrics (Precision/Recall) change your approach when tuning an XGBoost model on an imbalanced dataset?
+
+### Advanced
+11. Explain the mathematical derivation of Gradient Boosting. What exactly is the "Gradient" that is being boosted?
+12. Why is it necessary to scale/normalize features for Logistic Regression, but absolutely unnecessary for Decision Trees?
+13. If you use L1 (Lasso) Regularization on a Logistic Regression model, what physically happens to the weights of useless features?
+
+### Project Defense
+14. *Scenario:* In your portfolio project, you skipped Logistic Regression and went straight to XGBoost. Defend why you did not establish a linear baseline first.
+15. *Scenario:* Your Random Forest model is achieving 99% accuracy on the training set but 70% on the test set. Walk me through the exact hyperparameters you would change to fix this severe overfitting.
